@@ -1,0 +1,98 @@
+name: Build PDFium for Android
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'PDFium branch'
+        required: false
+        default: 'main'
+      version:
+        description: 'Version number'
+        required: false
+        default: ''
+      is_debug:
+        description: 'Debug build'
+        required: false
+        type: boolean
+        default: false
+      target_cpu:
+        description: 'Target CPU'
+        required: true
+        type: choice
+        options:
+        - all
+        - arm
+        - arm64
+        - x86
+        - x64
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Set matrix
+        id: set-matrix
+        run: |
+          if [ "${{ github.event.inputs.target_cpu }}" = "all" ]; then
+            echo 'matrix={"cpu":["arm","arm64","x86","x64"]}' >> $GITHUB_OUTPUT
+          else
+            echo 'matrix={"cpu":["${{ github.event.inputs.target_cpu }}"]}' >> $GITHUB_OUTPUT
+          fi
+
+  build:
+    needs: setup
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Make scripts executable
+      run: chmod +x steps/*.sh
+
+    - name: Set up environment
+      run: |
+        echo "PDFium_BRANCH=${{ github.event.inputs.branch }}" >> $GITHUB_ENV
+        echo "PDFium_IS_DEBUG=${{ github.event.inputs.is_debug }}" >> $GITHUB_ENV
+        echo "PDFium_TARGET_CPU=${{ matrix.cpu }}" >> $GITHUB_ENV
+        echo "PDFium_VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
+        bash steps/00-environment.sh
+
+    - name: Install dependencies
+      run: bash steps/01-install.sh
+
+    - name: Checkout PDFium
+      run: bash steps/02-checkout.sh
+
+    - name: Apply patches
+      run: bash steps/03-patch.sh
+
+    - name: Install extras
+      run: bash steps/04-install-extras.sh
+
+    - name: Configure build
+      run: bash steps/05-configure.sh
+
+    - name: Build
+      run: bash steps/06-build.sh
+
+    - name: Stage files
+      run: bash steps/07-stage.sh
+
+    - name: Collect licenses
+      run: bash steps/08-licenses.sh
+
+    - name: Test
+      run: bash steps/09-test.sh
+
+    - name: Package
+      run: bash steps/10-pack.sh
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: pdfium-android-${{ matrix.cpu }}${{ github.event.inputs.is_debug == 'true' && '-debug' || '' }}
+        path: pdfium-android-${{ matrix.cpu }}.tgz
