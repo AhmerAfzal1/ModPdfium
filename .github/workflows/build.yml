@@ -49,9 +49,12 @@ jobs:
       matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
     steps:
     - uses: actions/checkout@v4
-
+    
     - name: Make scripts executable
-      run: chmod +x steps/*.sh
+      run: |
+        # Remove Windows line endings from all shell scripts
+        find steps/ -name "*.sh" -exec sed -i 's/\r$//' {} \;
+        chmod +x steps/*.sh
 
     - name: Set up environment
       run: |

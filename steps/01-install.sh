@@ -16,7 +16,6 @@ export PATH="$PWD/depot_tools:$PATH"
 echo "$PWD/depot_tools" >> "$PATH_FILE"
 
 # Install Android NDK
-ANDROID_NDK_VERSION="r29-beta3"
 ANDROID_NDK_FOLDER="android-ndk-$ANDROID_NDK_VERSION"
 ANDROID_NDK_ZIP="android-ndk-$ANDROID_NDK_VERSION-linux.zip"
 if [ ! -d "$ANDROID_NDK_FOLDER" ];

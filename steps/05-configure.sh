@@ -19,7 +19,7 @@ mkdir -p "$BUILD"
   echo "treat_warnings_as_errors = false"
   echo "is_component_build = false"
   echo "clang_use_chrome_plugins = false"
-  echo "default_min_sdk_version = 24"
+  echo "default_min_sdk_version = $ANDROID_MIN_SDK"
 ) | sort > "$BUILD/args.gn"
 
 # Generate Ninja files

@@ -2,7 +2,6 @@
 
 PATCHES="$PWD/patches"
 SOURCE="${PDFium_SOURCE_DIR:-pdfium}"
-ENABLE_V8=${PDFium_ENABLE_V8:-false}
 
 apply_patch() {
   local FILE="$1"
