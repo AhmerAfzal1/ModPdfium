@@ -62,7 +62,6 @@ fi
 export PDFium_TARGET_OS=android
 export PDFium_TARGET_CPU=$1
 export PDFium_TARGET_ENVIRONMENT=
-# V8 permanently disable karo
 export PDFium_ENABLE_V8=false
 
 set -x
